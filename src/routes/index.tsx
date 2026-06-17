@@ -35,12 +35,6 @@ const WHY = [
 
 function Home() {
   useReveal();
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const msg = `Hi! I'm ${form.name} (${form.email}). ${form.message}`;
-    window.open(waLink(msg), "_blank", "noopener,noreferrer");
-  };
 
   return (
     <>
