@@ -226,8 +226,8 @@ export function GlobeHero() {
       invMat.copy(earthGroup.matrixWorld).invert();
       cursorLocal.copy(cursorWorld).applyMatrix4(invMat);
 
-      const repelRadius = 1.6;
-      const repelStrength = 1.0 * holdStrength;
+      const repelRadius = 2.6;
+      const repelStrength = 2.4 * holdStrength;
       for (let i = 0; i < count; i++) {
         let x = orig[i * 3] * pulse;
         let y = orig[i * 3 + 1] * pulse;
