@@ -210,13 +210,41 @@ export function GlobeHero() {
       // Spin boost while held
       earthGroup.rotation.y += spinBoost;
 
-      // Particle pulse — push outward on hold
+      // Particle pulse + cursor repel while holding
       const positions = geo.attributes.position.array as Float32Array;
-      const pulse = 1 + Math.sin(t * 2) * 0.008 + holdStrength * 0.06;
+      const pulse = 1 + Math.sin(t * 2) * 0.008 + holdStrength * 0.03;
+
+      raycaster.setFromCamera(target, camera);
+      const hits = raycaster.intersectObject(sphere, false);
+      const hasHit = hits.length > 0;
+      if (hasHit) cursorWorld.copy(hits[0].point);
+      earthGroup.updateMatrixWorld();
+      invMat.copy(earthGroup.matrixWorld).invert();
+      cursorLocal.copy(cursorWorld).applyMatrix4(invMat);
+
+      const repelRadius = 1.6;
+      const repelStrength = 1.0 * holdStrength;
       for (let i = 0; i < count; i++) {
-        positions[i * 3] = orig[i * 3] * pulse;
-        positions[i * 3 + 1] = orig[i * 3 + 1] * pulse;
-        positions[i * 3 + 2] = orig[i * 3 + 2] * pulse;
+        let x = orig[i * 3] * pulse;
+        let y = orig[i * 3 + 1] * pulse;
+        let z = orig[i * 3 + 2] * pulse;
+        if (hasHit && repelStrength > 0.001) {
+          const dx = x - cursorLocal.x;
+          const dy = y - cursorLocal.y;
+          const dz = z - cursorLocal.z;
+          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          if (dist < repelRadius && dist > 0.0001) {
+            const falloff = 1 - dist / repelRadius;
+            const push = falloff * falloff * repelStrength;
+            const inv = 1 / dist;
+            x += dx * inv * push;
+            y += dy * inv * push;
+            z += dz * inv * push;
+          }
+        }
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
       }
       geo.attributes.position.needsUpdate = true;
 
