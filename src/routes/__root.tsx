@@ -11,7 +11,6 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AnimatedCursor } from "../components/AnimatedCursor";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { WhatsAppButton } from "../components/WhatsAppButton";
@@ -72,7 +71,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600;1,700&family=Noto+Serif+Bengali:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" },
     ],
   }),
   shellComponent: RootShell,
@@ -100,7 +99,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AnimatedCursor />
       <div className="relative z-[2] flex min-h-screen flex-col">
         <Navbar />
         <main className="flex-1">
