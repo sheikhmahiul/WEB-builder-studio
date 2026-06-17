@@ -103,6 +103,8 @@ export function GlobeHero() {
     let dragVY = 0;
     let autoSpin = 0.0015;
     let spinBoost = 0; // eases up while holding
+    let baseRotX = 0;
+    let baseRotY = 0;
     const raycaster = new THREE.Raycaster();
     const cursorWorld = new THREE.Vector3();
     const cursorLocal = new THREE.Vector3();
@@ -191,28 +193,25 @@ export function GlobeHero() {
       const idleX = isPointerInside ? 0 : Math.sin(t * 0.4) * 0.15;
       const idleY = isPointerInside ? 0 : Math.cos(t * 0.3) * 0.1;
 
-      // Pointer parallax
-      const desiredRotX = (mouse.y * -0.5) + idleY;
-      const desiredRotY = (mouse.x * 0.6) + idleX;
-
-      // Drag inertia adds to rotation while holding
-      if (isHolding) {
-        earthGroup.rotation.x += dragVX;
-        earthGroup.rotation.y += dragVY;
-        dragVX *= 0.9;
-        dragVY *= 0.9;
-      } else {
-        earthGroup.rotation.x += (desiredRotX - earthGroup.rotation.x) * 0.04;
-        earthGroup.rotation.y += (desiredRotY - earthGroup.rotation.y) * 0.04 + autoSpin;
-        // residual inertia
-        earthGroup.rotation.x += dragVX;
-        earthGroup.rotation.y += dragVY;
+      // Accumulate base rotation from drag + auto-spin; parallax is a tilt offset on top
+      baseRotX += dragVX;
+      baseRotY += dragVY;
+      if (!isHolding) {
+        baseRotY += autoSpin;
         dragVX *= 0.94;
         dragVY *= 0.94;
+      } else {
+        dragVX *= 0.9;
+        dragVY *= 0.9;
       }
+      baseRotY += spinBoost;
 
-      // Spin boost while held
-      earthGroup.rotation.y += spinBoost;
+      // Pointer parallax tilt offset (does not overwrite drag rotation)
+      const parallaxX = (mouse.y * -0.25) + idleY;
+      const parallaxY = (mouse.x * 0.3) + idleX;
+
+      earthGroup.rotation.x = baseRotX + parallaxX;
+      earthGroup.rotation.y = baseRotY + parallaxY;
 
       // Particle pulse + cursor repel while holding
       const positions = geo.attributes.position.array as Float32Array;
