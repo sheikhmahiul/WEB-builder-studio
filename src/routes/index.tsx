@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { TIERS, CONTACT, waLink } from "../lib/pricing";
 import { PricingCard } from "../components/PricingCard";
 import { useReveal } from "../hooks/use-reveal";
+import { GlobeHero } from "../components/GlobeHero";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,23 +41,28 @@ function Home() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-6 lg:px-10 pt-20 lg:pt-28 pb-24">
-          <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-[color:var(--color-gold)] border border-[color:var(--color-gold)]/40 rounded-full px-4 py-1.5">
-            ✦ Premium Digital Craftsmanship
-          </span>
-          <h1 className="mt-8 font-display font-bold text-5xl md:text-7xl lg:text-8xl leading-[1.05] tracking-tight">
-            <span className="block">We Build</span>
-            <span className="block text-gold-gradient italic">Modern &amp;</span>
-            <span className="block"><span className="text-gold-gradient italic">Powerful</span> Websites</span>
-          </h1>
-          <p className="mt-8 max-w-xl text-base md:text-lg text-muted-foreground leading-relaxed">
-            Professional web design &amp; development for businesses that demand more. We engineer digital experiences that look like bespoke timepieces — and perform flawlessly.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link to="/pricing" className="btn-gold">View Pricing →</Link>
-            <a href={waLink("Hi! I'd like a free consultation about my website.")} target="_blank" rel="noopener noreferrer" className="btn-outline-gold">
-              Get Free Consultation
-            </a>
+        <div className="mx-auto max-w-7xl px-6 lg:px-10 pt-20 lg:pt-28 pb-24 grid lg:grid-cols-2 gap-10 items-center">
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-[color:var(--color-gold)] border border-[color:var(--color-gold)]/40 rounded-full px-4 py-1.5">
+              ✦ Premium Digital Craftsmanship
+            </span>
+            <h1 className="mt-8 font-display font-bold text-5xl md:text-7xl leading-[1.05] tracking-tight">
+              <span className="block">We Build</span>
+              <span className="block text-gold-gradient italic">Modern &amp;</span>
+              <span className="block"><span className="text-gold-gradient italic">Powerful</span> Websites</span>
+            </h1>
+            <p className="mt-8 max-w-xl text-base md:text-lg text-muted-foreground leading-relaxed">
+              Professional web design &amp; development for businesses that demand more. We engineer digital experiences that look like bespoke timepieces — and perform flawlessly.
+            </p>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link to="/pricing" className="btn-gold">View Pricing →</Link>
+              <a href={waLink("Hi! I'd like a free consultation about my website.")} target="_blank" rel="noopener noreferrer" className="btn-outline-gold">
+                Get Free Consultation
+              </a>
+            </div>
+          </div>
+          <div className="relative h-[420px] md:h-[560px] lg:h-[640px]">
+            <GlobeHero />
           </div>
         </div>
         <div className="gold-rule" />
