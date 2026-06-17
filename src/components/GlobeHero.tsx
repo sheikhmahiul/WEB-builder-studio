@@ -58,46 +58,179 @@ export function GlobeHero() {
       pos[i * 3 + 2] = orig[i * 3 + 2] = z;
     }
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    const points = new THREE.Points(
-      geo,
-      new THREE.PointsMaterial({
-        size: 0.035,
-        color: 0xd4af37,
-        transparent: true,
-        opacity: 0.85,
-        blending: THREE.AdditiveBlending,
-      }),
-    );
+    const pointsMat = new THREE.PointsMaterial({
+      size: 0.035,
+      color: 0xd4af37,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+    });
+    const points = new THREE.Points(geo, pointsMat);
     earthGroup.add(points);
 
     // Wireframe
-    earthGroup.add(
-      new THREE.Mesh(
-        new THREE.SphereGeometry(3.1, 32, 32),
-        new THREE.MeshBasicMaterial({
-          color: 0xd4af37,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.06,
-        }),
-      ),
+    const wire = new THREE.Mesh(
+      new THREE.SphereGeometry(3.1, 32, 32),
+      new THREE.MeshBasicMaterial({
+        color: 0xd4af37,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.06,
+      }),
     );
+    earthGroup.add(wire);
 
-    const mouse = new THREE.Vector2();
+    // Outer glow ring of particles that reacts on hold
+    const glowGeo = new THREE.SphereGeometry(3.35, 32, 32);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0xd4af37,
+      transparent: true,
+      opacity: 0,
+      side: THREE.BackSide,
+    });
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    earthGroup.add(glow);
+
+    // Mouse / interaction state
     const target = new THREE.Vector2();
-    const onMove = (e: MouseEvent) => {
-      target.x = (e.clientX / window.innerWidth) * 2 - 1;
-      target.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    };
-    window.addEventListener("mousemove", onMove);
+    const mouse = new THREE.Vector2();
+    let isPointerInside = false;
+    let isHolding = false;
+    let holdStrength = 0; // 0..1 eases toward 1 while holding
+    let lastPointerX = 0;
+    let lastPointerY = 0;
+    let dragVX = 0;
+    let dragVY = 0;
+    let autoSpin = 0.0015;
+    let spinBoost = 0; // eases up while holding
 
+    const updateTargetFromEvent = (clientX: number, clientY: number) => {
+      const rect = container.getBoundingClientRect();
+      const nx = ((clientX - rect.left) / rect.width) * 2 - 1;
+      const ny = -((clientY - rect.top) / rect.height) * 2 + 1;
+      target.x = nx;
+      target.y = ny;
+    };
+
+    const onMove = (e: MouseEvent) => {
+      updateTargetFromEvent(e.clientX, e.clientY);
+      if (isHolding) {
+        dragVY = (e.clientX - lastPointerX) * 0.005;
+        dragVX = (e.clientY - lastPointerY) * 0.005;
+      }
+      lastPointerX = e.clientX;
+      lastPointerY = e.clientY;
+    };
+    const onEnter = () => { isPointerInside = true; };
+    const onLeave = () => { isPointerInside = false; };
+    const onDown = (e: MouseEvent) => {
+      isHolding = true;
+      lastPointerX = e.clientX;
+      lastPointerY = e.clientY;
+      container.style.cursor = "grabbing";
+    };
+    const onUp = () => {
+      isHolding = false;
+      container.style.cursor = "grab";
+    };
+
+    container.style.cursor = "grab";
+    container.addEventListener("mousemove", onMove);
+    container.addEventListener("mouseenter", onEnter);
+    container.addEventListener("mouseleave", onLeave);
+    container.addEventListener("mousedown", onDown);
+    window.addEventListener("mouseup", onUp);
+
+    // Touch support
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (!t) return;
+      isHolding = true;
+      lastPointerX = t.clientX;
+      lastPointerY = t.clientY;
+      updateTargetFromEvent(t.clientX, t.clientY);
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (!t) return;
+      updateTargetFromEvent(t.clientX, t.clientY);
+      if (isHolding) {
+        dragVY = (t.clientX - lastPointerX) * 0.005;
+        dragVX = (t.clientY - lastPointerY) * 0.005;
+      }
+      lastPointerX = t.clientX;
+      lastPointerY = t.clientY;
+    };
+    const onTouchEnd = () => { isHolding = false; };
+    container.addEventListener("touchstart", onTouchStart, { passive: true });
+    container.addEventListener("touchmove", onTouchMove, { passive: true });
+    container.addEventListener("touchend", onTouchEnd);
+
+    const clock = new THREE.Clock();
     let raf = 0;
     const animate = () => {
       raf = requestAnimationFrame(animate);
-      mouse.x += (target.x - mouse.x) * 0.05;
-      mouse.y += (target.y - mouse.y) * 0.05;
-      earthGroup.rotation.y += 0.0015;
-      earthGroup.rotation.x += (mouse.y * 0.3 - earthGroup.rotation.x) * 0.03;
+      const t = clock.getElapsedTime();
+
+      // Ease mouse and hold strength
+      mouse.x += (target.x - mouse.x) * 0.06;
+      mouse.y += (target.y - mouse.y) * 0.06;
+      holdStrength += ((isHolding ? 1 : 0) - holdStrength) * 0.12;
+      spinBoost += ((isHolding ? 0.02 : 0) - spinBoost) * 0.08;
+
+      // Idle "breathing" pulse — gentle scale + opacity shimmer
+      const breathe = 1 + Math.sin(t * 1.2) * 0.012;
+      const pressScale = 1 - holdStrength * 0.04; // squish on hold
+      earthGroup.scale.setScalar(breathe * pressScale);
+
+      // Idle drift when pointer is outside container
+      const idleX = isPointerInside ? 0 : Math.sin(t * 0.4) * 0.15;
+      const idleY = isPointerInside ? 0 : Math.cos(t * 0.3) * 0.1;
+
+      // Pointer parallax
+      const desiredRotX = (mouse.y * -0.5) + idleY;
+      const desiredRotY = (mouse.x * 0.6) + idleX;
+
+      // Drag inertia adds to rotation while holding
+      if (isHolding) {
+        earthGroup.rotation.x += dragVX;
+        earthGroup.rotation.y += dragVY;
+        dragVX *= 0.9;
+        dragVY *= 0.9;
+      } else {
+        earthGroup.rotation.x += (desiredRotX - earthGroup.rotation.x) * 0.04;
+        earthGroup.rotation.y += (desiredRotY - earthGroup.rotation.y) * 0.04 + autoSpin;
+        // residual inertia
+        earthGroup.rotation.x += dragVX;
+        earthGroup.rotation.y += dragVY;
+        dragVX *= 0.94;
+        dragVY *= 0.94;
+      }
+
+      // Spin boost while held
+      earthGroup.rotation.y += spinBoost;
+
+      // Particle pulse — push outward on hold
+      const positions = geo.attributes.position.array as Float32Array;
+      const pulse = 1 + Math.sin(t * 2) * 0.008 + holdStrength * 0.06;
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = orig[i * 3] * pulse;
+        positions[i * 3 + 1] = orig[i * 3 + 1] * pulse;
+        positions[i * 3 + 2] = orig[i * 3 + 2] * pulse;
+      }
+      geo.attributes.position.needsUpdate = true;
+
+      // Glow + particle size react to hold
+      pointsMat.size = 0.035 + holdStrength * 0.04;
+      pointsMat.opacity = 0.85 + Math.sin(t * 2.5) * 0.05;
+      glowMat.opacity = 0.04 + holdStrength * 0.18 + Math.sin(t * 1.6) * 0.01;
+      glow.scale.setScalar(1 + holdStrength * 0.08);
+
+      // Light orbits subtly
+      pointLight.position.x = Math.cos(t * 0.6) * 6;
+      pointLight.position.z = Math.sin(t * 0.6) * 6;
+      pointLight.intensity = 2 + holdStrength * 1.5;
+
       renderer.render(scene, camera);
     };
     animate();
@@ -114,15 +247,27 @@ export function GlobeHero() {
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("mousemove", onMove);
+      container.removeEventListener("mousemove", onMove);
+      container.removeEventListener("mouseenter", onEnter);
+      container.removeEventListener("mouseleave", onLeave);
+      container.removeEventListener("mousedown", onDown);
+      window.removeEventListener("mouseup", onUp);
+      container.removeEventListener("touchstart", onTouchStart);
+      container.removeEventListener("touchmove", onTouchMove);
+      container.removeEventListener("touchend", onTouchEnd);
       ro.disconnect();
       renderer.dispose();
       geo.dispose();
       sphere.geometry.dispose();
       (sphere.material as THREE.Material).dispose();
-      container.removeChild(renderer.domElement);
+      glowGeo.dispose();
+      glowMat.dispose();
+      pointsMat.dispose();
+      if (renderer.domElement.parentNode === container) {
+        container.removeChild(renderer.domElement);
+      }
     };
   }, []);
 
-  return <div ref={ref} className="absolute inset-0" aria-hidden />;
+  return <div ref={ref} className="absolute inset-0" />;
 }
