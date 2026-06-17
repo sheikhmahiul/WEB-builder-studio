@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { TIERS, CONTACT, waLink } from "../lib/pricing";
+import { TIERS, waLink } from "../lib/pricing";
 import { PricingCard } from "../components/PricingCard";
 import { useReveal } from "../hooks/use-reveal";
 import { GlobeHero } from "../components/GlobeHero";
