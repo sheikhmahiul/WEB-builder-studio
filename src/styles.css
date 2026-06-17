@@ -141,4 +141,18 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
+  .has-custom-cursor,
+  .has-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+@keyframes cursor-pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes cursor-spin {
+  to { transform: rotate(360deg); }
 }
