@@ -21,28 +21,30 @@ function Pricing() {
   useReveal();
   return (
     <>
-      <section className="mx-auto max-w-7xl px-6 lg:px-10 pt-20 pb-10 text-center">
-        <span className="text-[11px] uppercase tracking-[0.25em] text-[color:var(--color-gold)]">Investment Tiers</span>
-        <h1 className="mt-4 font-display text-5xl md:text-7xl">
-          Premium pricing,<br />
-          <span className="text-gold-gradient italic">honest numbers.</span>
-        </h1>
-        <p className="mt-6 max-w-2xl mx-auto text-muted-foreground text-lg">
-          Four packages in BDT. Every plan includes lifetime technical guidance and launch assistance.
-        </p>
+      <section className="relative overflow-hidden pt-20 lg:pt-28 pb-12">
+        <div className="orb-gold top-0 right-0" aria-hidden />
+        <div className="mx-auto max-w-5xl px-6 lg:px-10 text-center relative">
+          <div className="reveal"><span className="eyebrow-chip">Investment Tiers</span></div>
+          <h1 className="reveal stagger-1 mt-6 font-display text-5xl md:text-7xl leading-[1.05]">
+            Tailored <span className="text-gold-gradient font-serif italic">Digital Solutions</span>
+          </h1>
+          <p className="reveal stagger-2 mt-6 mx-auto max-w-2xl text-muted-foreground text-lg">
+            Experience bespoke digital craftsmanship designed to elevate your brand. Transparent, premium pricing for elite digital presences.
+          </p>
+        </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 lg:px-10 py-16">
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4 relative pt-6">
-          {TIERS.map((t) => (
-            <div key={t.id} className="reveal relative"><PricingCard tier={t} /></div>
+          {TIERS.map((t, i) => (
+            <div key={t.id} className={`reveal stagger-${i + 1} relative`}><PricingCard tier={t} /></div>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-6 lg:px-10 py-16 text-center">
-        <h2 className="font-display text-3xl">Not sure which to pick?</h2>
-        <p className="mt-2 text-muted-foreground">Send a quick WhatsApp — we'll suggest the right tier for your goals.</p>
+      <section className="mx-auto max-w-3xl px-6 lg:px-10 py-20 text-center">
+        <h2 className="reveal font-display text-3xl md:text-4xl">Not sure which to pick?</h2>
+        <p className="reveal stagger-1 mt-3 text-muted-foreground">Send a quick WhatsApp — we'll suggest the right tier for your goals.</p>
       </section>
     </>
   );
