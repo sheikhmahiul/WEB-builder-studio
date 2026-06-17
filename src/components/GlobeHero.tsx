@@ -103,6 +103,8 @@ export function GlobeHero() {
     let dragVY = 0;
     let autoSpin = 0.0015;
     let spinBoost = 0; // eases up while holding
+    let baseRotX = 0;
+    let baseRotY = 0;
     const raycaster = new THREE.Raycaster();
     const cursorWorld = new THREE.Vector3();
     const cursorLocal = new THREE.Vector3();
