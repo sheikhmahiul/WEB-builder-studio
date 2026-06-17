@@ -26,10 +26,6 @@ const CORE = [
   { icon: "❖", t: "Business Sites", d: "Corporate platforms that establish unshakeable digital authority." },
 ];
 
-const WORKS = [
-  { t: "Aether Financial", k: "Fintech Platform", grad: "from-[#1a1a1f] via-[#0f0f14] to-black" },
-  { t: "Lumina Luxe", k: "E-Commerce Experience", grad: "from-[#1a1408] via-[#0f0a04] to-black" },
-];
 
 const WHY = [
   { t: "3+ Years Mastery", d: "Proven expertise in delivering high-end digital solutions for discerning clients." },
@@ -98,32 +94,55 @@ function Home() {
         </div>
       </section>
 
-      {/* Selected Works */}
+      {/* About */}
       <section className="mx-auto max-w-7xl px-6 lg:px-10 py-24">
-        <div className="flex items-end justify-between flex-wrap gap-4 reveal">
-          <div>
-            <h2 className="font-display text-4xl md:text-5xl">Selected Works</h2>
-            <p className="mt-3 max-w-xl text-muted-foreground">A curated gallery of recent high-end digital deployments.</p>
+        <div className="reveal max-w-3xl">
+          <h2 className="font-display text-4xl md:text-5xl">About <span className="text-gold-gradient font-serif italic">WEBbuilder</span> Studio</h2>
+          <div className="mt-8 space-y-5 text-muted-foreground leading-relaxed">
+            <p>
+              WEBbuilder Studio is a modern website design and development agency founded by Sheikh Mahiul Islam. We help businesses, startups, e-commerce brands, and service providers establish a powerful online presence through premium, fast-loading, and conversion-focused websites.
+            </p>
+            <p>
+              Our goal is simple: to build websites that not only look professional but also help businesses attract customers, generate leads, and grow revenue. Every project is developed with a strong focus on performance, user experience, security, and scalability.
+            </p>
+            <p>
+              From landing pages and e-commerce stores to business websites and custom web applications, we deliver solutions tailored to each client's unique goals and requirements.
+            </p>
           </div>
-          <Link to="/services" className="link-underline text-[color:var(--color-gold)] text-xs uppercase tracking-[0.25em]">
-            View all projects →
-          </Link>
-        </div>
-        <div className="mt-12 grid gap-8 md:grid-cols-2">
-          {WORKS.map((w, i) => (
-            <article key={w.t} className={`reveal stagger-${i + 1} group`}>
-              <div className={`relative aspect-[4/3] rounded-xl overflow-hidden bg-gradient-to-br ${w.grad} glass-border-gradient border border-white/5`}>
-                <div className="absolute inset-0 grid place-items-center">
-                  <div className="w-3/4 h-2/3 rounded-lg border border-[color:var(--color-gold)]/30 grid place-items-center bg-black/40">
-                    <div className="font-display text-3xl text-gold-gradient">{w.t}</div>
-                  </div>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition" />
-              </div>
-              <h3 className="mt-5 font-display text-2xl">{w.t}</h3>
-              <p className="mt-1 text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-gold)]">{w.k}</p>
-            </article>
-          ))}
+          <h3 className="mt-10 font-display text-2xl">Why Choose WEBbuilder Studio?</h3>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            <li className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
+              3+ Years Experience
+            </li>
+            <li className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
+              Premium UI/UX Design
+            </li>
+            <li className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
+              Mobile-Responsive Development
+            </li>
+            <li className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
+              Fast & Secure Websites
+            </li>
+            <li className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
+              SEO-Friendly Structure
+            </li>
+            <li className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
+              Lifetime Technical Guidance
+            </li>
+            <li className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
+              Professional Communication
+            </li>
+          </ul>
+          <p className="mt-8 text-muted-foreground leading-relaxed">
+            At WEBbuilder Studio, we believe a website should be more than just an online presence—it should be a powerful tool that helps your business grow and succeed in the digital world.
+          </p>
         </div>
       </section>
 
