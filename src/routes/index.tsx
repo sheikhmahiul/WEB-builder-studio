@@ -44,21 +44,19 @@ function Home() {
           <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-[color:var(--color-gold)] border border-[color:var(--color-gold)]/40 rounded-full px-4 py-1.5">
             ✦ Premium Digital Craftsmanship
           </span>
-          <h1 className="mt-8 font-display text-5xl md:text-7xl lg:text-8xl leading-[1.02]">
-            We Build
-            <br />
-            <span className="text-gold-gradient italic">Modern &amp;</span>
-            <br />
-            <span className="text-gold-gradient italic">Powerful</span> Websites
+          <h1 className="mt-8 font-display font-bold text-5xl md:text-7xl lg:text-8xl leading-[1.05] tracking-tight">
+            <span className="block">We Build</span>
+            <span className="block text-gold-gradient italic">Modern &amp;</span>
+            <span className="block"><span className="text-gold-gradient italic">Powerful</span> Websites</span>
           </h1>
           <p className="mt-8 max-w-xl text-base md:text-lg text-muted-foreground leading-relaxed">
             Professional web design &amp; development for businesses that demand more. We engineer digital experiences that look like bespoke timepieces — and perform flawlessly.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
-            <a href={waLink("Hi! I'd like a free consultation about my website.")} target="_blank" rel="noopener noreferrer" className="btn-gold">
-              Get Free Consultation →
+            <Link to="/pricing" className="btn-gold">View Pricing →</Link>
+            <a href={waLink("Hi! I'd like a free consultation about my website.")} target="_blank" rel="noopener noreferrer" className="btn-outline-gold">
+              Get Free Consultation
             </a>
-            <Link to="/pricing" className="btn-outline-gold">View Pricing</Link>
           </div>
         </div>
         <div className="gold-rule" />
