@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { TIERS, CONTACT, waLink } from "../lib/pricing";
+import { TIERS, waLink } from "../lib/pricing";
 import { PricingCard } from "../components/PricingCard";
 import { useReveal } from "../hooks/use-reveal";
 import { GlobeHero } from "../components/GlobeHero";
@@ -36,12 +35,6 @@ const WHY = [
 
 function Home() {
   useReveal();
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const msg = `Hi! I'm ${form.name} (${form.email}). ${form.message}`;
-    window.open(waLink(msg), "_blank", "noopener,noreferrer");
-  };
 
   return (
     <>
@@ -182,43 +175,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Initiate Consultation */}
-      <section className="mx-auto max-w-7xl px-6 lg:px-10 py-24">
-        <div className="glass-panel glass-border-gradient rounded-2xl p-8 md:p-14 grid lg:grid-cols-2 gap-12 reveal relative overflow-hidden">
-          <div className="orb-gold -top-32 -left-32" aria-hidden />
-          <div className="relative">
-            <h2 className="font-display text-4xl md:text-5xl">Initiate <span className="text-gold-gradient font-serif italic block md:inline">Consultation</span></h2>
-            <p className="mt-5 text-muted-foreground max-w-md leading-relaxed">
-              Ready to elevate your digital presence? Reach out to discuss your requirements. We typically respond within 4 hours.
-            </p>
-            <div className="mt-8 space-y-3 text-sm">
-              <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-3 text-foreground/90 hover:text-[color:var(--color-gold)] transition">
-                <span className="h-9 w-9 grid place-items-center rounded-md border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)]">✉</span>
-                {CONTACT.email}
-              </a>
-              <a href={CONTACT.whatsappLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-foreground/90 hover:text-[color:var(--color-gold)] transition">
-                <span className="h-9 w-9 grid place-items-center rounded-md border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)]">☎</span>
-                {CONTACT.whatsappNumber}
-              </a>
-            </div>
-          </div>
-          <form onSubmit={onSubmit} className="relative space-y-5">
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Full Name</label>
-              <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-luxury" placeholder="John Doe" />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Email Address</label>
-              <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input-luxury" placeholder="john@company.com" />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Project Details</label>
-              <textarea required rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="input-luxury resize-none" placeholder="Briefly describe your requirements…" />
-            </div>
-            <button type="submit" className="btn-gold w-full">Send Message</button>
-          </form>
-        </div>
-      </section>
     </>
   );
 }
