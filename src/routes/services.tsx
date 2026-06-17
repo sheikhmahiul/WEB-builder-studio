@@ -20,7 +20,7 @@ const SERVICES = [
   { icon: "✶", t: "Landing Pages", d: "Single-page sites engineered to convert. Hero, offer, social proof, contact — all calibrated.", points: ["Premium UI design", "Mobile responsive", "SEO foundations", "WhatsApp integration"] },
   { icon: "◈", t: "E-Commerce", d: "Full storefronts with cart, checkout, COD and admin. Sell while you sleep.", points: ["Product & category mgmt", "Order tracking", "Admin dashboard", "WhatsApp orders"] },
   { icon: "❖", t: "Booking & Business", d: "Service businesses get appointment booking, inquiry forms and maps — fully managed.", points: ["Appointment booking", "Inquiry forms", "Google Maps", "5–10 pages"] },
-  { icon: "</>", t: "Company Websites", d: "Flagship brand presence with CMS, blog, portfolio, team — built to scale.", points: ["Dynamic CMS", "Blog system", "Lead generation", "Google Analytics"] },
+  { icon: "✦", t: "Company Websites", d: "Flagship brand presence with CMS, blog, portfolio, team — built to scale.", points: ["Dynamic CMS", "Blog system", "Lead generation", "Google Analytics"] },
 ];
 
 function Services() {
