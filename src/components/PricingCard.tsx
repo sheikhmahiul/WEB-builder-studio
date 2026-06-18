@@ -23,7 +23,7 @@ export function PricingCard({ tier }: { tier: Tier }) {
       <p className="mt-2 text-sm text-muted-foreground">{tier.tagline}</p>
 
       <div className="mt-6 relative">
-        <div className="font-display text-5xl text-gold-gradient">{tier.price}</div>
+        <div className="font-sans font-light text-5xl text-gold-gradient tracking-tight tabular-nums">{tier.price}</div>
         <div className="absolute inset-0 shimmer opacity-40 pointer-events-none" aria-hidden />
       </div>
 
