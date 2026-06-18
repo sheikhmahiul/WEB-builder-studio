@@ -17,12 +17,22 @@ export const Route = createFileRoute("/contact")({
   component: Contact,
 });
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function Contact() {
   useReveal();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [error, setError] = useState<string | null>(null);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const msg = `Hi! I'm ${form.name} (${form.email}). ${form.message}`;
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const message = form.message.trim();
+    if (!name || name.length > 100) return setError("Please enter a valid name (max 100 chars).");
+    if (!EMAIL_RE.test(email) || email.length > 255) return setError("Please enter a valid email.");
+    if (!message || message.length > 1000) return setError("Message must be 1–1000 characters.");
+    setError(null);
+    const msg = `Hi! I'm ${name} (${email}). ${message}`;
     window.open(waLink(msg), "_blank", "noopener,noreferrer");
   };
 
