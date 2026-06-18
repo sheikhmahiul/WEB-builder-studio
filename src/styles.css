@@ -34,9 +34,9 @@
   --color-gold-vivid: var(--gold-vivid);
   --color-ink: var(--ink);
   --color-cream: var(--cream);
-  --font-display: "Hanken Grotesk", "Noto Serif Bengali", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inter", "Noto Serif Bengali", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-display: "Cormorant Garamond", "Noto Serif Bengali", ui-serif, Georgia, serif;
+  --font-sans: "Jost", "Noto Serif Bengali", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", ui-serif, Georgia, serif;
 }
 
 :root {
