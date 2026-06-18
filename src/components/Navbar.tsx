@@ -17,7 +17,7 @@ export function Navbar() {
     <header className="sticky top-0 z-40 backdrop-blur-md bg-background/70 border-b border-[color:var(--color-border)]">
       <div className="mx-auto max-w-7xl px-6 lg:px-10 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logoAsset.url} alt="WEBbuilder Studio" className="h-10 w-10 object-contain" />
+          <img src={logoImg} alt="WEBbuilder Studio" className="h-10 w-10 object-contain" />
           <span className="font-display text-xl tracking-tight hidden sm:inline">
             <span className="text-gold-gradient">WEB</span>
             <span className="text-foreground">builder</span>
