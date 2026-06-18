@@ -17,12 +17,22 @@ export const Route = createFileRoute("/contact")({
   component: Contact,
 });
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function Contact() {
   useReveal();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [error, setError] = useState<string | null>(null);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const msg = `Hi! I'm ${form.name} (${form.email}). ${form.message}`;
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const message = form.message.trim();
+    if (!name || name.length > 100) return setError("Please enter a valid name (max 100 chars).");
+    if (!EMAIL_RE.test(email) || email.length > 255) return setError("Please enter a valid email.");
+    if (!message || message.length > 1000) return setError("Message must be 1–1000 characters.");
+    setError(null);
+    const msg = `Hi! I'm ${name} (${email}). ${message}`;
     window.open(waLink(msg), "_blank", "noopener,noreferrer");
   };
 
@@ -52,17 +62,18 @@ function Contact() {
 
         <div className="mt-6 space-y-5">
           <div>
-            <label className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Full Name</label>
-            <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-luxury" placeholder="Your name" />
+            <label htmlFor="cf-name" className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Full Name</label>
+            <input id="cf-name" name="name" autoComplete="name" required maxLength={100} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-luxury" placeholder="Your name" />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Email</label>
-            <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input-luxury" placeholder="you@company.com" />
+            <label htmlFor="cf-email" className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Email</label>
+            <input id="cf-email" name="email" autoComplete="email" required type="email" maxLength={255} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input-luxury" placeholder="you@company.com" />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Project Details</label>
-            <textarea required rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="input-luxury resize-none" placeholder="Tell us about your project, timeline, and budget." />
+            <label htmlFor="cf-message" className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Project Details</label>
+            <textarea id="cf-message" name="message" required rows={5} maxLength={1000} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="input-luxury resize-none" placeholder="Tell us about your project, timeline, and budget." />
           </div>
+          {error && <p role="alert" className="text-sm text-red-400">{error}</p>}
           <button type="submit" className="btn-gold w-full">Send via WhatsApp →</button>
         </div>
       </form>
