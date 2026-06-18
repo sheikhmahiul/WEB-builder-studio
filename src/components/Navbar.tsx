@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { CONTACT, waLink } from "../lib/pricing";
-import logoAsset from "../assets/logo.png.asset.json";
+import logoImg from "../assets/logo-transparent.png";
 
 const NAV = [
   { to: "/", label: "Home" },

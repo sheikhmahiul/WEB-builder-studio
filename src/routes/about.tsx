@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useReveal } from "../hooks/use-reveal";
 import { CONTACT } from "../lib/pricing";
-import logoAsset from "../assets/webbuilder-logo.jpg.asset.json";
+import logoImg from "../assets/webbuilder-logo.png";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
