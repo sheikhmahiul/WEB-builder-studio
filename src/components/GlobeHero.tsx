@@ -13,18 +13,40 @@ export function GlobeHero() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 10;
+    camera.position.z = 11;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
+    const GOLD = 0xd4af37;
+    const GOLD_SOFT = 0xf5d57a;
+
+    // Distant starfield
+    const starGeo = new THREE.BufferGeometry();
+    const starCount = 600;
+    const starPos = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      const r = 18 + Math.random() * 12;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      starPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      starPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      starPos[i * 3 + 2] = r * Math.cos(phi);
+    }
+    starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
+    const stars = new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({ color: 0xffffff, size: 0.03, transparent: true, opacity: 0.55 }),
+    );
+    scene.add(stars);
+
     const earthGroup = new THREE.Group();
     scene.add(earthGroup);
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-    const pointLight = new THREE.PointLight(0xd4af37, 2, 50);
+    const pointLight = new THREE.PointLight(GOLD, 2.2, 60);
     pointLight.position.set(5, 5, 5);
     scene.add(pointLight);
 
@@ -33,15 +55,15 @@ export function GlobeHero() {
       new THREE.SphereGeometry(3, 64, 64),
       new THREE.MeshPhongMaterial({
         color: 0x050505,
-        emissive: 0x111111,
-        shininess: 50,
+        emissive: 0x0a0a0a,
+        shininess: 60,
         transparent: true,
         opacity: 0.95,
       }),
     );
     earthGroup.add(sphere);
 
-    // Particles
+    // Surface particles
     const count = 2500;
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(count * 3);
@@ -60,7 +82,7 @@ export function GlobeHero() {
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     const pointsMat = new THREE.PointsMaterial({
       size: 0.035,
-      color: 0xd4af37,
+      color: GOLD,
       transparent: true,
       opacity: 0.85,
       blending: THREE.AdditiveBlending,
@@ -71,19 +93,14 @@ export function GlobeHero() {
     // Wireframe
     const wire = new THREE.Mesh(
       new THREE.SphereGeometry(3.1, 32, 32),
-      new THREE.MeshBasicMaterial({
-        color: 0xd4af37,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.06,
-      }),
+      new THREE.MeshBasicMaterial({ color: GOLD, wireframe: true, transparent: true, opacity: 0.06 }),
     );
     earthGroup.add(wire);
 
-    // Outer glow ring of particles that reacts on hold
+    // Outer glow
     const glowGeo = new THREE.SphereGeometry(3.35, 32, 32);
     const glowMat = new THREE.MeshBasicMaterial({
-      color: 0xd4af37,
+      color: GOLD,
       transparent: true,
       opacity: 0,
       side: THREE.BackSide,
@@ -91,18 +108,120 @@ export function GlobeHero() {
     const glow = new THREE.Mesh(glowGeo, glowMat);
     earthGroup.add(glow);
 
-    // Mouse / interaction state
+    // ---- Orbiting rings (tilted ellipses) ----
+    const makeRing = (radius: number, tiltX: number, tiltZ: number, opacity: number) => {
+      const segs = 128;
+      const ringGeo = new THREE.BufferGeometry();
+      const rp = new Float32Array((segs + 1) * 3);
+      for (let i = 0; i <= segs; i++) {
+        const a = (i / segs) * Math.PI * 2;
+        rp[i * 3] = Math.cos(a) * radius;
+        rp[i * 3 + 1] = 0;
+        rp[i * 3 + 2] = Math.sin(a) * radius;
+      }
+      ringGeo.setAttribute("position", new THREE.BufferAttribute(rp, 3));
+      const line = new THREE.Line(
+        ringGeo,
+        new THREE.LineBasicMaterial({ color: GOLD, transparent: true, opacity, blending: THREE.AdditiveBlending }),
+      );
+      line.rotation.x = tiltX;
+      line.rotation.z = tiltZ;
+      return line;
+    };
+    const ring1 = makeRing(4.0, Math.PI / 2.4, 0.2, 0.35);
+    const ring2 = makeRing(4.6, Math.PI / 3.5, -0.5, 0.22);
+    const ring3 = makeRing(5.2, Math.PI / 5, 0.8, 0.14);
+    earthGroup.add(ring1, ring2, ring3);
+
+    // ---- Satellites travelling along the rings ----
+    const satGeo = new THREE.SphereGeometry(0.08, 16, 16);
+    const satMat = new THREE.MeshBasicMaterial({ color: GOLD_SOFT });
+    type Sat = { mesh: THREE.Mesh; radius: number; speed: number; phase: number; tiltX: number; tiltZ: number };
+    const sats: Sat[] = [
+      { mesh: new THREE.Mesh(satGeo, satMat.clone()), radius: 4.0, speed: 0.35, phase: 0, tiltX: Math.PI / 2.4, tiltZ: 0.2 },
+      { mesh: new THREE.Mesh(satGeo, satMat.clone()), radius: 4.6, speed: -0.22, phase: 2.1, tiltX: Math.PI / 3.5, tiltZ: -0.5 },
+      { mesh: new THREE.Mesh(satGeo, satMat.clone()), radius: 5.2, speed: 0.18, phase: 4.3, tiltX: Math.PI / 5, tiltZ: 0.8 },
+    ];
+    sats.forEach((s) => earthGroup.add(s.mesh));
+
+    // ---- Great-circle arcs connecting random surface "cities" ----
+    const cityCount = 12;
+    const cities: THREE.Vector3[] = [];
+    for (let i = 0; i < cityCount; i++) {
+      const u = Math.random();
+      const v = Math.random();
+      const theta = 2 * Math.PI * u;
+      const phi = Math.acos(2 * v - 1);
+      cities.push(new THREE.Vector3(
+        3 * Math.sin(phi) * Math.cos(theta),
+        3 * Math.sin(phi) * Math.sin(theta),
+        3 * Math.cos(phi),
+      ));
+    }
+
+    // City markers (pulsing dots)
+    const cityDotMat = new THREE.MeshBasicMaterial({ color: GOLD_SOFT, transparent: true, opacity: 0.9 });
+    const cityMeshes = cities.map((c) => {
+      const m = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 12), cityDotMat.clone());
+      m.position.copy(c).multiplyScalar(1.02);
+      earthGroup.add(m);
+      return m;
+    });
+
+    type Arc = {
+      line: THREE.Line;
+      points: THREE.Vector3[];
+      progress: number; // 0..1 reveal
+      life: number; // seconds remaining visible after full
+      speed: number;
+    };
+    const arcs: Arc[] = [];
+    const ARC_SEGMENTS = 60;
+
+    const spawnArc = () => {
+      if (arcs.length > 6) return;
+      const a = cities[Math.floor(Math.random() * cities.length)];
+      let b = cities[Math.floor(Math.random() * cities.length)];
+      if (a === b) b = cities[(cities.indexOf(a) + 1) % cities.length];
+      // Build great-circle arc with altitude bump
+      const pts: THREE.Vector3[] = [];
+      const angle = a.angleTo(b);
+      const axis = new THREE.Vector3().crossVectors(a, b).normalize();
+      for (let i = 0; i <= ARC_SEGMENTS; i++) {
+        const t = i / ARC_SEGMENTS;
+        const q = new THREE.Quaternion().setFromAxisAngle(axis, angle * t);
+        const p = a.clone().applyQuaternion(q);
+        // lift toward midpoint
+        const lift = Math.sin(t * Math.PI) * (0.6 + angle * 0.3);
+        p.setLength(3 + lift);
+        pts.push(p);
+      }
+      const ag = new THREE.BufferGeometry();
+      const arr = new Float32Array((ARC_SEGMENTS + 1) * 3);
+      ag.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+      ag.setDrawRange(0, 0);
+      const line = new THREE.Line(
+        ag,
+        new THREE.LineBasicMaterial({ color: GOLD, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending }),
+      );
+      earthGroup.add(line);
+      arcs.push({ line, points: pts, progress: 0, life: 1.2 + Math.random() * 1.5, speed: 0.7 + Math.random() * 0.8 });
+    };
+
+    let nextArcAt = 0;
+
+    // ---- Interaction state ----
     const target = new THREE.Vector2();
     const mouse = new THREE.Vector2();
     let isPointerInside = false;
     let isHolding = false;
-    let holdStrength = 0; // 0..1 eases toward 1 while holding
+    let holdStrength = 0;
     let lastPointerX = 0;
     let lastPointerY = 0;
     let dragVX = 0;
     let dragVY = 0;
-    let autoSpin = 0.0015;
-    let spinBoost = 0; // eases up while holding
+    const autoSpin = 0.0015;
+    let spinBoost = 0;
     let baseRotX = 0;
     let baseRotY = 0;
     const raycaster = new THREE.Raycaster();
@@ -112,10 +231,8 @@ export function GlobeHero() {
 
     const updateTargetFromEvent = (clientX: number, clientY: number) => {
       const rect = container.getBoundingClientRect();
-      const nx = ((clientX - rect.left) / rect.width) * 2 - 1;
-      const ny = -((clientY - rect.top) / rect.height) * 2 + 1;
-      target.x = nx;
-      target.y = ny;
+      target.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      target.y = -((clientY - rect.top) / rect.height) * 2 + 1;
     };
 
     const onMove = (e: MouseEvent) => {
@@ -134,6 +251,7 @@ export function GlobeHero() {
       lastPointerX = e.clientX;
       lastPointerY = e.clientY;
       container.style.cursor = "grabbing";
+      spawnArc();
     };
     const onUp = () => {
       isHolding = false;
@@ -147,25 +265,19 @@ export function GlobeHero() {
     container.addEventListener("mousedown", onDown);
     window.addEventListener("mouseup", onUp);
 
-    // Touch support
     const onTouchStart = (e: TouchEvent) => {
-      const t = e.touches[0];
-      if (!t) return;
-      isHolding = true;
-      lastPointerX = t.clientX;
-      lastPointerY = t.clientY;
+      const t = e.touches[0]; if (!t) return;
+      isHolding = true; lastPointerX = t.clientX; lastPointerY = t.clientY;
       updateTargetFromEvent(t.clientX, t.clientY);
     };
     const onTouchMove = (e: TouchEvent) => {
-      const t = e.touches[0];
-      if (!t) return;
+      const t = e.touches[0]; if (!t) return;
       updateTargetFromEvent(t.clientX, t.clientY);
       if (isHolding) {
         dragVY = (t.clientX - lastPointerX) * 0.005;
         dragVX = (t.clientY - lastPointerY) * 0.005;
       }
-      lastPointerX = t.clientX;
-      lastPointerY = t.clientY;
+      lastPointerX = t.clientX; lastPointerY = t.clientY;
     };
     const onTouchEnd = () => { isHolding = false; };
     container.addEventListener("touchstart", onTouchStart, { passive: true });
@@ -177,23 +289,20 @@ export function GlobeHero() {
     const animate = () => {
       raf = requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
+      const dt = Math.min(clock.getDelta(), 0.05);
 
-      // Ease mouse and hold strength
       mouse.x += (target.x - mouse.x) * 0.06;
       mouse.y += (target.y - mouse.y) * 0.06;
       holdStrength += ((isHolding ? 1 : 0) - holdStrength) * 0.12;
       spinBoost += ((isHolding ? 0.02 : 0) - spinBoost) * 0.08;
 
-      // Idle "breathing" pulse — gentle scale + opacity shimmer
       const breathe = 1 + Math.sin(t * 1.2) * 0.012;
-      const pressScale = 1 - holdStrength * 0.04; // squish on hold
+      const pressScale = 1 - holdStrength * 0.04;
       earthGroup.scale.setScalar(breathe * pressScale);
 
-      // Idle drift when pointer is outside container
       const idleX = isPointerInside ? 0 : Math.sin(t * 0.4) * 0.15;
       const idleY = isPointerInside ? 0 : Math.cos(t * 0.3) * 0.1;
 
-      // Accumulate base rotation from drag + auto-spin; parallax is a tilt offset on top
       baseRotX += dragVX;
       baseRotY += dragVY;
       if (!isHolding) {
@@ -206,14 +315,12 @@ export function GlobeHero() {
       }
       baseRotY += spinBoost;
 
-      // Pointer parallax tilt offset (does not overwrite drag rotation)
       const parallaxX = (mouse.y * -0.25) + idleY;
       const parallaxY = (mouse.x * 0.3) + idleX;
-
       earthGroup.rotation.x = baseRotX + parallaxX;
       earthGroup.rotation.y = baseRotY + parallaxY;
 
-      // Particle pulse + cursor repel while holding
+      // Particle pulse + cursor repel
       const positions = geo.attributes.position.array as Float32Array;
       const pulse = 1 + Math.sin(t * 2) * 0.008 + holdStrength * 0.03;
 
@@ -251,16 +358,68 @@ export function GlobeHero() {
       }
       geo.attributes.position.needsUpdate = true;
 
-      // Glow + particle size react to hold
       pointsMat.size = 0.035 + holdStrength * 0.04;
       pointsMat.opacity = 0.85 + Math.sin(t * 2.5) * 0.05;
       glowMat.opacity = 0.04 + holdStrength * 0.18 + Math.sin(t * 1.6) * 0.01;
       glow.scale.setScalar(1 + holdStrength * 0.08);
 
-      // Light orbits subtly
       pointLight.position.x = Math.cos(t * 0.6) * 6;
       pointLight.position.z = Math.sin(t * 0.6) * 6;
       pointLight.intensity = 2 + holdStrength * 1.5;
+
+      // Stars subtle counter-rotation
+      stars.rotation.y = t * 0.01;
+
+      // Satellites along their rings
+      sats.forEach((s) => {
+        const a = t * s.speed + s.phase;
+        const lx = Math.cos(a) * s.radius;
+        const lz = Math.sin(a) * s.radius;
+        // local position then apply ring tilt (rotateX then rotateZ)
+        const v = new THREE.Vector3(lx, 0, lz);
+        v.applyEuler(new THREE.Euler(s.tiltX, 0, s.tiltZ));
+        s.mesh.position.copy(v);
+      });
+
+      // City dots pulse
+      cityMeshes.forEach((m, i) => {
+        const s = 1 + Math.sin(t * 2.5 + i) * 0.35;
+        m.scale.setScalar(s);
+        (m.material as THREE.MeshBasicMaterial).opacity = 0.55 + Math.sin(t * 2.5 + i) * 0.35;
+      });
+
+      // Spawn arcs periodically (more often while holding)
+      if (t > nextArcAt) {
+        spawnArc();
+        nextArcAt = t + (isHolding ? 0.45 : 1.6 + Math.random() * 1.4);
+      }
+
+      // Animate arcs (reveal then fade)
+      for (let i = arcs.length - 1; i >= 0; i--) {
+        const a = arcs[i];
+        const arr = a.line.geometry.attributes.position.array as Float32Array;
+        if (a.progress < 1) {
+          a.progress = Math.min(1, a.progress + dt * a.speed);
+          const visible = Math.floor(a.progress * (ARC_SEGMENTS + 1));
+          for (let j = 0; j < visible; j++) {
+            arr[j * 3] = a.points[j].x;
+            arr[j * 3 + 1] = a.points[j].y;
+            arr[j * 3 + 2] = a.points[j].z;
+          }
+          a.line.geometry.setDrawRange(0, visible);
+          a.line.geometry.attributes.position.needsUpdate = true;
+        } else {
+          a.life -= dt;
+          const mat = a.line.material as THREE.LineBasicMaterial;
+          mat.opacity = Math.max(0, a.life / 1.4) * 0.9;
+          if (a.life <= 0) {
+            earthGroup.remove(a.line);
+            a.line.geometry.dispose();
+            (a.line.material as THREE.Material).dispose();
+            arcs.splice(i, 1);
+          }
+        }
+      }
 
       renderer.render(scene, camera);
     };
@@ -294,6 +453,10 @@ export function GlobeHero() {
       glowGeo.dispose();
       glowMat.dispose();
       pointsMat.dispose();
+      starGeo.dispose();
+      (stars.material as THREE.Material).dispose();
+      satGeo.dispose();
+      arcs.forEach((a) => { a.line.geometry.dispose(); (a.line.material as THREE.Material).dispose(); });
       if (renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
       }
