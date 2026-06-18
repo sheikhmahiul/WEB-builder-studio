@@ -23,6 +23,11 @@ function AuthPage() {
     if (!loading && user) navigate({ to: "/" });
   }, [user, loading, navigate]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("recover")) setMode("forgot");
+  }, []);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setErr(null); setMsg(null);
