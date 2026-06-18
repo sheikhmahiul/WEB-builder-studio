@@ -37,7 +37,7 @@ export function PricingCard({ tier }: { tier: Tier }) {
         href={waLink(message)}
         target="_blank"
         rel="noopener noreferrer"
-        className={`mt-8 ${tier.featured ? "btn-gold" : "btn-outline-gold"} w-full`}
+        className={`mt-auto ${tier.featured ? "btn-gold" : "btn-outline-gold"} w-full`}
       >
         Order on WhatsApp
       </a>
