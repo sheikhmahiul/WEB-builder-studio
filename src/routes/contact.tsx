@@ -62,17 +62,18 @@ function Contact() {
 
         <div className="mt-6 space-y-5">
           <div>
-            <label className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Full Name</label>
-            <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-luxury" placeholder="Your name" />
+            <label htmlFor="cf-name" className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Full Name</label>
+            <input id="cf-name" name="name" autoComplete="name" required maxLength={100} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-luxury" placeholder="Your name" />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Email</label>
-            <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input-luxury" placeholder="you@company.com" />
+            <label htmlFor="cf-email" className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Email</label>
+            <input id="cf-email" name="email" autoComplete="email" required type="email" maxLength={255} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input-luxury" placeholder="you@company.com" />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Project Details</label>
-            <textarea required rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="input-luxury resize-none" placeholder="Tell us about your project, timeline, and budget." />
+            <label htmlFor="cf-message" className="block text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">Project Details</label>
+            <textarea id="cf-message" name="message" required rows={5} maxLength={1000} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="input-luxury resize-none" placeholder="Tell us about your project, timeline, and budget." />
           </div>
+          {error && <p role="alert" className="text-sm text-red-400">{error}</p>}
           <button type="submit" className="btn-gold w-full">Send via WhatsApp →</button>
         </div>
       </form>
