@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useReveal } from "../hooks/use-reveal";
 import { CONTACT } from "../lib/pricing";
+import logoAsset from "../assets/webbuilder-logo.jpg.asset.json";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -50,7 +51,7 @@ function About() {
           <div className="absolute inset-0 bg-[color:var(--color-gold)]/5 rounded-xl blur-2xl -translate-x-4 translate-y-4" aria-hidden />
           <div className="glass-panel glass-border-gradient rounded-xl p-2 relative">
             <div className="aspect-[3/2] rounded-lg bg-gradient-to-br from-[#1a1408] via-[#0f0a04] to-black grid place-items-center overflow-hidden">
-              <div className="font-display text-6xl text-gold-gradient">WB</div>
+              <img src={logoAsset.url} alt="WEBbuilder Studio Logo" className="w-48 h-auto object-contain" />
             </div>
           </div>
           <div className="absolute -bottom-6 -right-6 glass-panel glass-border-gradient rounded-xl p-6 z-20">
