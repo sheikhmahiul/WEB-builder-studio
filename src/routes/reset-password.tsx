@@ -8,6 +8,8 @@ export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
 });
 
+type Status = "checking" | "ready" | "expired" | "invalid";
+
 function ResetPasswordPage() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -15,17 +17,95 @@ function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>("checking");
+  const [statusMsg, setStatusMsg] = useState<string>("");
 
   useEffect(() => {
-    const hash = window.location.hash;
-    if (!hash.includes("type=recovery")) {
-      setErr("Invalid or expired reset link.");
+    const hash = window.location.hash.startsWith("#")
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+    const search = window.location.search.startsWith("?")
+      ? window.location.search.slice(1)
+      : window.location.search;
+    const params = new URLSearchParams(hash || search);
+
+    const errorCode = params.get("error_code") || params.get("error");
+    const errorDesc = params.get("error_description");
+
+    if (errorCode) {
+      const isExpired =
+        errorCode === "otp_expired" ||
+        /expired/i.test(errorDesc ?? "");
+      if (isExpired) {
+        setStatus("expired");
+        setStatusMsg(
+          "This password reset link has expired. Please request a new one."
+        );
+      } else {
+        setStatus("invalid");
+        setStatusMsg(
+          errorDesc?.replace(/\+/g, " ") ??
+            "This password reset link is invalid."
+        );
+      }
+      return;
     }
+
+    // Supabase auto-exchanges the recovery token in the URL hash and fires
+    // a PASSWORD_RECOVERY event. Wait briefly for it; otherwise fall back
+    // to checking the current session.
+    let settled = false;
+    const finishReady = () => {
+      if (settled) return;
+      settled = true;
+      setStatus("ready");
+    };
+    const finishInvalid = () => {
+      if (settled) return;
+      settled = true;
+      setStatus("invalid");
+      setStatusMsg(
+        "This password reset link is invalid or has already been used."
+      );
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+        finishReady();
+      }
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) finishReady();
+    });
+
+    const hasRecoveryHash =
+      hash.includes("type=recovery") || hash.includes("access_token=");
+
+    const timer = setTimeout(() => {
+      if (settled) return;
+      if (hasRecoveryHash) {
+        // Token present but no session established → expired/used.
+        setStatus("expired");
+        setStatusMsg(
+          "This password reset link has expired or has already been used. Please request a new one."
+        );
+        settled = true;
+      } else {
+        finishInvalid();
+      }
+    }, 2500);
+
+    return () => {
+      clearTimeout(timer);
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErr(null); setMsg(null);
+    setErr(null);
+    setMsg(null);
     if (password !== confirm) {
       setErr("Passwords do not match.");
       return;
@@ -41,7 +121,15 @@ function ResetPasswordPage() {
       setMsg("Password updated successfully. Redirecting…");
       setTimeout(() => navigate({ to: "/auth" }), 1500);
     } catch (e: any) {
-      setErr(e?.message ?? "Something went wrong");
+      const message = e?.message ?? "Something went wrong";
+      if (/expired|invalid|session/i.test(message)) {
+        setStatus("expired");
+        setStatusMsg(
+          "Your reset session has expired. Please request a new reset link."
+        );
+      } else {
+        setErr(message);
+      }
     } finally {
       setBusy(false);
     }
@@ -50,31 +138,90 @@ function ResetPasswordPage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-md rounded-2xl border border-[color:var(--color-border)] bg-background/60 backdrop-blur p-8">
-        <Link to="/" className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-[color:var(--color-gold)]">← Home</Link>
-        <h1 className="mt-4 font-display text-3xl">New password</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Enter a new password for your account.</p>
+        <Link
+          to="/"
+          className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-[color:var(--color-gold)]"
+        >
+          ← Home
+        </Link>
+        <h1 className="mt-4 font-display text-3xl">
+          {status === "expired"
+            ? "Link expired"
+            : status === "invalid"
+            ? "Invalid link"
+            : "New password"}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {status === "ready"
+            ? "Enter a new password for your account."
+            : status === "checking"
+            ? "Verifying your reset link…"
+            : statusMsg}
+        </p>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div>
-            <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">New password</label>
-            <input
-              type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-md bg-transparent border border-[color:var(--color-border)] px-3 py-2 outline-none focus:border-[color:var(--color-gold)]"
-            />
+        {status === "ready" && (
+          <form onSubmit={onSubmit} className="mt-6 space-y-4">
+            <div>
+              <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                New password
+              </label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 w-full rounded-md bg-transparent border border-[color:var(--color-border)] px-3 py-2 outline-none focus:border-[color:var(--color-gold)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                Confirm password
+              </label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="mt-1 w-full rounded-md bg-transparent border border-[color:var(--color-border)] px-3 py-2 outline-none focus:border-[color:var(--color-gold)]"
+              />
+            </div>
+            {err && <p className="text-sm text-red-400">{err}</p>}
+            {msg && <p className="text-sm text-emerald-400">{msg}</p>}
+            <button
+              type="submit"
+              disabled={busy}
+              className="btn-gold w-full disabled:opacity-50"
+            >
+              {busy ? "Please wait…" : "Update password"}
+            </button>
+          </form>
+        )}
+
+        {(status === "expired" || status === "invalid") && (
+          <div className="mt-6 space-y-3">
+            <Link
+              to="/auth"
+              search={{ recover: 1 } as never}
+              className="btn-gold w-full inline-flex items-center justify-center"
+            >
+              Request a new link
+            </Link>
+            <Link
+              to="/auth"
+              className="block text-center text-xs text-muted-foreground hover:text-[color:var(--color-gold)] underline"
+            >
+              ← Back to sign in
+            </Link>
           </div>
-          <div>
-            <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Confirm password</label>
-            <input
-              type="password" required minLength={6} value={confirm} onChange={(e) => setConfirm(e.target.value)}
-              className="mt-1 w-full rounded-md bg-transparent border border-[color:var(--color-border)] px-3 py-2 outline-none focus:border-[color:var(--color-gold)]"
-            />
+        )}
+
+        {status === "checking" && (
+          <div className="mt-6 h-1 w-full overflow-hidden rounded bg-[color:var(--color-border)]">
+            <div className="h-full w-1/3 animate-pulse bg-[color:var(--color-gold)]" />
           </div>
-          {err && <p className="text-sm text-red-400">{err}</p>}
-          {msg && <p className="text-sm text-emerald-400">{msg}</p>}
-          <button type="submit" disabled={busy} className="btn-gold w-full disabled:opacity-50">
-            {busy ? "Please wait…" : "Update password"}
-          </button>
-        </form>
+        )}
       </div>
     </div>
   );
