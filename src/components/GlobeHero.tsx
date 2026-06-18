@@ -128,19 +128,19 @@ export function GlobeHero() {
       line.rotation.z = tiltZ;
       return line;
     };
-    const ring1 = makeRing(4.0, Math.PI / 2.4, 0.2, 0.35);
-    const ring2 = makeRing(4.6, Math.PI / 3.5, -0.5, 0.22);
-    const ring3 = makeRing(5.2, Math.PI / 5, 0.8, 0.14);
+    const ring1 = makeRing(3.45, Math.PI / 2.4, 0.2, 0.4);
+    const ring2 = makeRing(3.7, Math.PI / 3.5, -0.5, 0.28);
+    const ring3 = makeRing(3.95, Math.PI / 5, 0.8, 0.18);
     earthGroup.add(ring1, ring2, ring3);
 
     // ---- Satellites travelling along the rings ----
-    const satGeo = new THREE.SphereGeometry(0.08, 16, 16);
+    const satGeo = new THREE.SphereGeometry(0.07, 16, 16);
     const satMat = new THREE.MeshBasicMaterial({ color: GOLD_SOFT });
     type Sat = { mesh: THREE.Mesh; radius: number; speed: number; phase: number; tiltX: number; tiltZ: number };
     const sats: Sat[] = [
-      { mesh: new THREE.Mesh(satGeo, satMat.clone()), radius: 4.0, speed: 0.35, phase: 0, tiltX: Math.PI / 2.4, tiltZ: 0.2 },
-      { mesh: new THREE.Mesh(satGeo, satMat.clone()), radius: 4.6, speed: -0.22, phase: 2.1, tiltX: Math.PI / 3.5, tiltZ: -0.5 },
-      { mesh: new THREE.Mesh(satGeo, satMat.clone()), radius: 5.2, speed: 0.18, phase: 4.3, tiltX: Math.PI / 5, tiltZ: 0.8 },
+      { mesh: new THREE.Mesh(satGeo, satMat.clone()), radius: 3.45, speed: 0.35, phase: 0, tiltX: Math.PI / 2.4, tiltZ: 0.2 },
+      { mesh: new THREE.Mesh(satGeo, satMat.clone()), radius: 3.7, speed: -0.22, phase: 2.1, tiltX: Math.PI / 3.5, tiltZ: -0.5 },
+      { mesh: new THREE.Mesh(satGeo, satMat.clone()), radius: 3.95, speed: 0.18, phase: 4.3, tiltX: Math.PI / 5, tiltZ: 0.8 },
     ];
     sats.forEach((s) => earthGroup.add(s.mesh));
 
