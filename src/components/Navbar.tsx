@@ -17,7 +17,7 @@ export function Navbar() {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-md bg-background/70 border-b border-[color:var(--color-border)]">
+    <header className="sticky top-0 z-40 bg-background/95 md:bg-background/70 md:backdrop-blur-md border-b border-[color:var(--color-border)]">
       <div className="mx-auto max-w-7xl px-6 lg:px-10 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
           <img src={logoImg} alt="WEBbuilder Studio" className="h-10 w-10 object-contain" />

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Subtle WebGL luxury background — deep onyx with two slowly drifting
@@ -6,8 +6,14 @@ import { useEffect, useRef } from "react";
  */
 export function ShaderBackground() {
   const ref = useRef<HTMLCanvasElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsMobile(true);
+      return;
+    }
+
     const canvas = ref.current;
     if (!canvas) return;
 
@@ -103,6 +109,8 @@ void main(){
       ro.disconnect();
     };
   }, []);
+
+  if (isMobile) return null;
 
   return (
     <canvas
