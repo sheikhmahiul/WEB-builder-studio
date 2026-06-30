@@ -2,8 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CONTACT, waLink } from "../lib/pricing";
 import logoImg from "../assets/logo-transparent.png";
-import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "../lib/api";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -15,12 +14,8 @@ const NAV = [
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
   const navigate = useNavigate();
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/" });
-  }
+
   return (
     <header className="sticky top-0 z-40 backdrop-blur-md bg-background/70 border-b border-[color:var(--color-border)]">
       <div className="mx-auto max-w-7xl px-6 lg:px-10 h-16 flex items-center justify-between">
@@ -48,18 +43,6 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          {user ? (
-            <>
-              <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground truncate max-w-[160px]">{user.email}</span>
-              <button onClick={handleSignOut} className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-[color:var(--color-gold)]">
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link to="/auth" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-[color:var(--color-gold)]">
-              Sign In
-            </Link>
-          )}
           <a
             href={waLink("Hi! I'd like to discuss a website project.")}
             target="_blank"
@@ -94,22 +77,6 @@ export function Navbar() {
                 {n.label}
               </Link>
             ))}
-            {user ? (
-              <button
-                onClick={() => { setOpen(false); handleSignOut(); }}
-                className="py-2 text-left text-muted-foreground hover:text-[color:var(--color-gold)]"
-              >
-                Logout ({user.email})
-              </button>
-            ) : (
-              <Link
-                to="/auth"
-                onClick={() => setOpen(false)}
-                className="py-2 text-muted-foreground hover:text-[color:var(--color-gold)]"
-              >
-                Sign In / Sign Up
-              </Link>
-            )}
             <a
               href={CONTACT.whatsappLink}
               target="_blank"

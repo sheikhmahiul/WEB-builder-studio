@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, DependencyList } from "react";
 
-export function useReveal() {
+export function useReveal(deps: DependencyList = []) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const els = document.querySelectorAll<HTMLElement>(".reveal");
@@ -21,5 +21,5 @@ export function useReveal() {
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, deps);
 }

@@ -35,15 +35,35 @@ void main(){ v_uv = a_position * 0.5 + 0.5; gl_Position = vec4(a_position, 0.0, 
     const fs = `precision highp float;
 varying vec2 v_uv;
 uniform float u_time;
+
+// Random function for stars
+float rand(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+}
+
 void main(){
   vec2 uv = v_uv;
-  float noise = sin(uv.x * 2.0 + u_time * 0.2) * cos(uv.y * 2.0 - u_time * 0.3) * 0.5 + 0.5;
-  vec3 base = mix(vec3(0.02,0.02,0.02), vec3(0.05,0.04,0.02), noise * 0.35);
-  float o1 = 1.0 - length(uv - vec2(0.2,0.8) + vec2(sin(u_time*0.5)*0.1, cos(u_time*0.5)*0.1));
-  float o2 = 1.0 - length(uv - vec2(0.8,0.2) + vec2(cos(u_time*0.4)*0.1, sin(u_time*0.4)*0.1));
+  
+  // Base dark background (night mode)
+  vec3 base = vec3(0.01, 0.01, 0.02);
+  
+  // Starfield effect (dots)
+  float star = rand(uv);
+  // Only show very few bright pixels (stars)
+  if (star > 0.995) {
+    float twinkle = sin(u_time * 2.0 + star * 100.0) * 0.5 + 0.5;
+    base += vec3(0.8, 0.8, 0.9) * twinkle;
+  }
+  
+  // Subtle gradient / nebula noise for premium glassy feel
+  float noise = sin(uv.x * 2.0 + u_time * 0.1) * cos(uv.y * 2.0 - u_time * 0.15) * 0.5 + 0.5;
+  base += vec3(0.04, 0.03, 0.05) * noise;
+
+  // Single very soft gold glow on the left (removed right one to fix bug)
+  float o1 = 1.0 - length(uv - vec2(0.2, 0.7) + vec2(sin(u_time*0.3)*0.05, cos(u_time*0.3)*0.05));
   vec3 gold = vec3(0.83, 0.69, 0.22);
-  base += gold * pow(max(0.0, o1), 12.0) * 0.18;
-  base += gold * pow(max(0.0, o2), 12.0) * 0.18;
+  base += gold * pow(max(0.0, o1), 8.0) * 0.08;
+
   gl_FragColor = vec4(base, 1.0);
 }`;
 

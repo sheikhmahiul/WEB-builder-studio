@@ -1,24 +1,51 @@
 import { useEffect, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "../lib/api";
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  email_verified_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export function useAuth() {
-  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
+  const fetchUser = async () => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      setUser(null);
       setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
+      return;
+    }
+
+    try {
+      const userData = await api.get("/user");
+      setUser(userData);
+    } catch (err) {
+      console.error("Auth verify failed, clearing token", err);
+      localStorage.removeItem("auth_token");
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+    
+    // Simple custom event listener to reload user state on login/logout
+    window.addEventListener("auth-state-change", fetchUser);
+    return () => window.removeEventListener("auth-state-change", fetchUser);
   }, []);
 
-  return { session, user, loading };
+  return { 
+    user, 
+    loading,
+    isAuthenticated: !!user,
+    reload: fetchUser 
+  };
 }

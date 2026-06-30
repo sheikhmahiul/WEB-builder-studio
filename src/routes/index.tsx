@@ -1,8 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { TIERS, waLink } from "../lib/pricing";
+import { useEffect, useState } from "react";
+import { TIERS as STATIC_TIERS, waLink, Tier } from "../lib/pricing";
 import { PricingCard } from "../components/PricingCard";
 import { useReveal } from "../hooks/use-reveal";
 import { GlobeHero } from "../components/GlobeHero";
+import { ProcessTimeline } from "../components/ProcessTimeline";
+import { TestimonialCard } from "../components/TestimonialCard";
+import { TechMarquee } from "../components/TechMarquee";
+import { api } from "../lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,7 +30,6 @@ const CORE = [
   { icon: "❖", t: "Business Sites", d: "Corporate platforms that establish unshakeable digital authority." },
 ];
 
-
 const WHY = [
   { t: "3+ Years Mastery", d: "Proven expertise in delivering high-end digital solutions for discerning clients." },
   { t: "Modern Design", d: "Clean, minimalist aesthetics that prioritize content and luxury typography." },
@@ -33,8 +37,49 @@ const WHY = [
   { t: "Lifetime Support", d: "Unwavering commitment to maintaining your digital asset's integrity." },
 ];
 
+const STATIC_TESTIMONIALS = [
+  {
+    quote: "WEBbuilder Studio transformed our brand's digital presence. The new site is not just beautiful, it's a lead generation machine.",
+    name: "Sarah Jenkins",
+    role: "CEO, Luxa Brand",
+    stars: 5,
+  },
+  {
+    quote: "The process was seamless and the result exceeded our expectations. Truly premium digital craftsmanship.",
+    name: "David Chen",
+    role: "Founder, Elevate Architecture",
+    stars: 5,
+  },
+  {
+    quote: "Our online sales doubled within the first month of launching the new e-commerce platform.",
+    name: "Aisha Khan",
+    role: "Director, Aurum Jewelers",
+    stars: 5,
+  },
+];
+
 function Home() {
-  useReveal();
+  const [tiers, setTiers] = useState<Tier[]>(STATIC_TIERS);
+  const [testimonials, setTestimonials] = useState<any[]>(STATIC_TESTIMONIALS);
+  useReveal([tiers, testimonials]);
+
+  useEffect(() => {
+    api.get("/pricing")
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setTiers(data);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch pricing", err));
+
+    api.get("/testimonials")
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setTestimonials(data);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch testimonials", err));
+  }, []);
 
   return (
     <>
@@ -46,10 +91,10 @@ function Home() {
             <div className="reveal">
               <span className="eyebrow-chip">✦ Premium Digital Craftsmanship</span>
             </div>
-            <h1 className="reveal stagger-1 mt-8 font-display text-5xl md:text-7xl lg:text-[5.5rem] leading-[1.02] tracking-tight">
-              <span className="block">We Build</span>
-              <span className="block"><span className="text-gold-gradient font-serif italic">Modern &amp;</span></span>
-              <span className="block"><span className="text-gold-gradient font-serif italic">Powerful</span> Websites</span>
+            <h1 className="reveal stagger-1 mt-8 font-display text-5xl md:text-7xl lg:text-[5.5rem] leading-[1.1] tracking-tight">
+              We Build <br />
+              <span className="text-gold-gradient">Modern &amp; Powerful</span><br />
+              Websites
             </h1>
             <p className="reveal stagger-2 mt-8 max-w-xl text-base md:text-lg text-muted-foreground leading-relaxed">
               Professional Web Design &amp; Development Solutions For Businesses Worldwide. We engineer digital experiences that look like bespoke timepieces and perform flawlessly.
@@ -67,6 +112,9 @@ function Home() {
         </div>
         <div className="gold-rule" />
       </section>
+
+      {/* Tech Marquee */}
+      <TechMarquee />
 
       {/* Core competencies */}
       <section className="mx-auto max-w-7xl px-6 lg:px-10 py-24 lg:py-32">
@@ -87,10 +135,23 @@ function Home() {
         </div>
       </section>
 
+      {/* Process Section */}
+      <section className="mx-auto max-w-7xl px-6 lg:px-10 py-24 lg:py-32">
+        <div className="reveal max-w-3xl mb-16 text-center mx-auto">
+          <span className="eyebrow-chip mb-4">Our Methodology</span>
+          <h2 className="mt-4 font-display text-4xl md:text-5xl">The <span className="text-gold-gradient">Process</span></h2>
+          <p className="mt-4 text-muted-foreground leading-relaxed">
+            A refined, proven workflow designed to translate your vision into an elegant, high-performing digital asset.
+          </p>
+        </div>
+        <ProcessTimeline />
+      </section>
+
       {/* About */}
-      <section className="mx-auto max-w-7xl px-6 lg:px-10 py-24">
-        <div className="reveal max-w-3xl">
-          <h2 className="font-display text-4xl md:text-5xl">About <span className="text-gold-gradient font-serif italic">WEBbuilder</span> Studio</h2>
+      <section className="mx-auto max-w-7xl px-6 lg:px-10 py-24 relative">
+        <div className="gold-rule absolute top-0 w-full left-0" />
+        <div className="reveal max-w-3xl pt-10">
+          <h2 className="font-display text-4xl md:text-5xl">About <span className="text-gold-gradient">WEBbuilder</span> Studio</h2>
           <div className="mt-8 space-y-5 text-muted-foreground leading-relaxed">
             <p>
               WEBbuilder Studio is a modern website design and development agency founded by Sheikh Mahiul Islam. We help businesses, startups, e-commerce brands, and service providers establish a powerful online presence through premium, fast-loading, and conversion-focused websites.
@@ -104,38 +165,37 @@ function Home() {
           </div>
           <h3 className="mt-10 font-display text-2xl">Why Choose WEBbuilder Studio?</h3>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-            <li className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
-              3+ Years Experience
-            </li>
-            <li className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
-              Premium UI/UX Design
-            </li>
-            <li className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
-              Mobile-Responsive Development
-            </li>
-            <li className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
-              Fast & Secure Websites
-            </li>
-            <li className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
-              SEO-Friendly Structure
-            </li>
-            <li className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
-              Lifetime Technical Guidance
-            </li>
-            <li className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
-              Professional Communication
-            </li>
+            {[
+              "3+ Years Experience", "Premium UI/UX Design", "Mobile-Responsive Development", 
+              "Fast & Secure Websites", "SEO-Friendly Structure", "Lifetime Technical Guidance", 
+              "Professional Communication"
+            ].map(item => (
+              <li key={item} className="flex items-center gap-3 text-sm text-muted-foreground">
+                <span className="h-6 w-6 grid place-items-center rounded border border-[color:var(--color-gold)]/40 text-[color:var(--color-gold)] text-xs">✓</span>
+                {item}
+              </li>
+            ))}
           </ul>
           <p className="mt-8 text-muted-foreground leading-relaxed">
             At WEBbuilder Studio, we believe a website should be more than just an online presence—it should be a powerful tool that helps your business grow and succeed in the digital world.
           </p>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="relative overflow-hidden py-24 lg:py-32 bg-[color:var(--color-ink)]/20">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10 relative">
+          <div className="reveal text-center max-w-2xl mx-auto">
+            <span className="eyebrow-chip mb-4">Client Feedback</span>
+            <h2 className="mt-4 font-display text-4xl md:text-5xl">Words of <span className="text-gold-gradient">Praise</span></h2>
+          </div>
+          <div className="mt-16 grid gap-6 md:grid-cols-3">
+            {testimonials.map((t, i) => (
+              <div key={t.name} className={`reveal stagger-${i + 1}`}>
+                <TestimonialCard testimonial={t} />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -148,9 +208,9 @@ function Home() {
           </div>
           <Link to="/pricing" className="btn-outline-gold">Full comparison →</Link>
         </div>
-        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4 relative">
-          {TIERS.map((t, i) => (
-            <div key={t.id} className={`reveal stagger-${i + 1} relative`}><PricingCard tier={t} /></div>
+        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3 relative">
+          {tiers.map((t, i) => (
+            <div key={t.id || t.slug} className={`reveal stagger-${i + 1} relative`}><PricingCard tier={{ ...t, id: t.id || t.slug }} /></div>
           ))}
         </div>
       </section>
@@ -159,7 +219,7 @@ function Home() {
       <section className="mx-auto max-w-7xl px-6 lg:px-10 py-24">
         <div className="reveal max-w-2xl">
           <span className="eyebrow-chip">Why Choose Us</span>
-          <h2 className="mt-5 font-display text-4xl md:text-5xl">The WEBbuilder <span className="text-gold-gradient font-serif italic">Advantage</span></h2>
+          <h2 className="mt-5 font-display text-4xl md:text-5xl">The WEBbuilder <span className="text-gold-gradient">Advantage</span></h2>
           <p className="mt-4 text-muted-foreground">
             We deliver more than websites; we construct digital assets engineered for performance, security, and aesthetic dominance.
           </p>
@@ -172,6 +232,25 @@ function Home() {
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{w.d}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Dramatic CTA Banner */}
+      <section className="relative overflow-hidden py-32 mt-12 border-t border-[color:var(--color-border)]">
+        <div className="absolute inset-0 bg-[color:var(--color-ink)]/50" />
+        <div className="cta-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" aria-hidden />
+        <div className="relative mx-auto max-w-4xl px-6 lg:px-10 text-center reveal">
+          <h2 className="font-display text-5xl md:text-7xl leading-[1.05]">
+            Ready to build your <span className="text-gold-gradient">legacy?</span>
+          </h2>
+          <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+            Stop losing customers to outdated design. Elevate your brand with a digital experience that commands authority.
+          </p>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <a href={waLink("Hi! I'd like to start a project with WEBbuilder Studio.")} target="_blank" rel="noopener noreferrer" className="btn-gold !text-sm !py-4 !px-8">
+              Start Your Project →
+            </a>
+          </div>
         </div>
       </section>
 

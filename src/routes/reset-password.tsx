@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "../lib/api";
 
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
@@ -21,85 +21,17 @@ function ResetPasswordPage() {
   const [statusMsg, setStatusMsg] = useState<string>("");
 
   useEffect(() => {
-    const hash = window.location.hash.startsWith("#")
-      ? window.location.hash.slice(1)
-      : window.location.hash;
-    const search = window.location.search.startsWith("?")
-      ? window.location.search.slice(1)
-      : window.location.search;
-    const params = new URLSearchParams(hash || search);
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const email = params.get("email");
 
-    const errorCode = params.get("error_code") || params.get("error");
-    const errorDesc = params.get("error_description");
-
-    if (errorCode) {
-      const isExpired =
-        errorCode === "otp_expired" ||
-        /expired/i.test(errorDesc ?? "");
-      if (isExpired) {
-        setStatus("expired");
-        setStatusMsg(
-          "This password reset link has expired. Please request a new one."
-        );
-      } else {
-        setStatus("invalid");
-        setStatusMsg(
-          errorDesc?.replace(/\+/g, " ") ??
-            "This password reset link is invalid."
-        );
-      }
+    if (!token || !email) {
+      setStatus("invalid");
+      setStatusMsg("This password reset link is invalid or incomplete.");
       return;
     }
 
-    // Supabase auto-exchanges the recovery token in the URL hash and fires
-    // a PASSWORD_RECOVERY event. Wait briefly for it; otherwise fall back
-    // to checking the current session.
-    let settled = false;
-    const finishReady = () => {
-      if (settled) return;
-      settled = true;
-      setStatus("ready");
-    };
-    const finishInvalid = () => {
-      if (settled) return;
-      settled = true;
-      setStatus("invalid");
-      setStatusMsg(
-        "This password reset link is invalid or has already been used."
-      );
-    };
-
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
-        finishReady();
-      }
-    });
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) finishReady();
-    });
-
-    const hasRecoveryHash =
-      hash.includes("type=recovery") || hash.includes("access_token=");
-
-    const timer = setTimeout(() => {
-      if (settled) return;
-      if (hasRecoveryHash) {
-        // Token present but no session established → expired/used.
-        setStatus("expired");
-        setStatusMsg(
-          "This password reset link has expired or has already been used. Please request a new one."
-        );
-        settled = true;
-      } else {
-        finishInvalid();
-      }
-    }, 2500);
-
-    return () => {
-      clearTimeout(timer);
-      sub.subscription.unsubscribe();
-    };
+    setStatus("ready");
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
@@ -116,20 +48,22 @@ function ResetPasswordPage() {
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token") || "";
+      const email = params.get("email") || "";
+
+      await api.post("/reset-password", {
+        token,
+        email,
+        password,
+        password_confirmation: confirm,
+      });
+
       setMsg("Password updated successfully. Redirecting…");
       setTimeout(() => navigate({ to: "/auth" }), 1500);
     } catch (e: any) {
       const message = e?.message ?? "Something went wrong";
-      if (/expired|invalid|session/i.test(message)) {
-        setStatus("expired");
-        setStatusMsg(
-          "Your reset session has expired. Please request a new reset link."
-        );
-      } else {
-        setErr(message);
-      }
+      setErr(message);
     } finally {
       setBusy(false);
     }

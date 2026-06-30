@@ -18,6 +18,7 @@ export type Tier = {
   priceLabel: string;
   tagline: string;
   featured?: boolean;
+  demoLink?: string;
   features: string[];
   bonuses: string[];
   benefits: string[];
@@ -28,7 +29,7 @@ export const TIERS: Tier[] = [
     id: "landing",
     icon: "🥉",
     name: "Simple Landing Page",
-    price: "৳5,000",
+    price: "৳1,999",
     priceLabel: "Starter",
     tagline: "Convert visitors with a premium one-page site.",
     features: [
@@ -51,9 +52,11 @@ export const TIERS: Tier[] = [
     id: "ecommerce",
     icon: "🥈",
     name: "E-Commerce Website",
-    price: "৳18,999",
+    price: "৳5,999",
     priceLabel: "Sell Online",
     tagline: "Full storefront with cart, checkout & admin.",
+    featured: true,
+    demoLink: "https://demo.webbuilder.studio", // Added visit link
     features: [
       "Premium E-commerce Design",
       "Product Management",
@@ -67,7 +70,7 @@ export const TIERS: Tier[] = [
       "SSL Security Setup",
     ],
     bonuses: [
-      "FREE 1 Year Domain (.com / .net / .org)",
+      "FREE 1 Year Domain",
       "Lifetime Technical Guidance",
       "Free SSL Certificate",
       "Website Launch Assistance",
@@ -75,52 +78,21 @@ export const TIERS: Tier[] = [
     benefits: ["Sell 24/7", "Easy Order Management", "More Revenue", "Grow Online"],
   },
   {
-    id: "booking",
-    icon: "🥇",
-    name: "Custom Booking / Business Website",
-    price: "৳21,999",
-    priceLabel: "Service Business",
-    tagline: "Bookings, inquiries & business pages, beautifully done.",
-    features: [
-      "5–10 Custom Pages",
-      "Premium UI / UX Design",
-      "Appointment Booking System",
-      "Contact & Inquiry Forms",
-      "WhatsApp Integration",
-      "Google Maps Integration",
-      "Admin Dashboard",
-      "Mobile Responsive Layout",
-      "SEO Optimization",
-      "SSL Security Setup",
-    ],
-    bonuses: [
-      "FREE 1 Year Domain",
-      "Lifetime Technical Guidance",
-      "Free SSL Certificate",
-      "Website Launch Assistance",
-    ],
-    benefits: ["More Clients", "Automated Booking", "Save Time", "Build Credibility"],
-  },
-  {
-    id: "professional",
+    id: "custom",
     icon: "👑",
-    name: "Professional Company Website",
-    price: "৳34,999",
-    priceLabel: "Most Popular",
-    tagline: "Flagship brand presence with CMS, blog & analytics.",
-    featured: true,
+    name: "Custom Build Website",
+    price: "৳?????",
+    priceLabel: "Let's Talk",
+    tagline: "Amra je kono web custom vabe build kore dite pari.",
     features: [
       "Fully Custom Premium Design",
-      "10+ Pages",
+      "Unlimited Pages",
       "Advanced Admin Panel",
-      "Dynamic CMS",
-      "Blog System",
-      "Portfolio & Team Sections",
-      "Lead Generation Forms",
+      "Dynamic CMS & Blog System",
+      "Custom Features & Logic",
       "Advanced SEO",
       "Performance Optimization",
       "SSL Security Setup",
-      "Google Analytics Setup",
     ],
     bonuses: [
       "FREE 1 Year Domain",
@@ -129,8 +101,8 @@ export const TIERS: Tier[] = [
       "Website Launch Assistance",
     ],
     benefits: [
+      "Tailored to your needs",
       "Premium Brand Authority",
-      "Higher Customer Trust",
       "More Conversions",
       "Long-Term Business Growth",
     ],

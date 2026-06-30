@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { api } from "../lib/api";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -11,8 +11,9 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, reload } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -33,21 +34,22 @@ function AuthPage() {
     setBusy(true); setErr(null); setMsg(null);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { emailRedirectTo: window.location.origin },
+        const data = await api.post("/register", {
+          name,
+          email,
+          password,
+          password_confirmation: password,
         });
-        if (error) throw error;
-        setMsg("Account created. Signing you in…");
+        localStorage.setItem("auth_token", data.token);
+        setMsg("Account created successfully!");
+        window.dispatchEvent(new Event("auth-state-change"));
       } else if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        if (error) throw error;
-        setMsg("Password reset link sent to your email.");
+        const data = await api.post("/forgot-password", { email });
+        setMsg(data.message || "Password reset link sent to your email.");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const data = await api.post("/login", { email, password });
+        localStorage.setItem("auth_token", data.token);
+        window.dispatchEvent(new Event("auth-state-change"));
       }
     } catch (e: any) {
       setErr(e?.message ?? "Something went wrong");
@@ -79,6 +81,15 @@ function AuthPage() {
         </div>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
+          {mode === "signup" && (
+            <div>
+              <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Full Name</label>
+              <input
+                type="text" required value={name} onChange={(e) => setName(e.target.value)}
+                className="mt-1 w-full rounded-md bg-transparent border border-[color:var(--color-border)] px-3 py-2 outline-none focus:border-[color:var(--color-gold)]"
+              />
+            </div>
+          )}
           <div>
             <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Email</label>
             <input

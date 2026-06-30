@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CONTACT, waLink } from "../lib/pricing";
 import { useReveal } from "../hooks/use-reveal";
+import { api } from "../lib/api";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -23,7 +24,9 @@ function Contact() {
   useReveal();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [error, setError] = useState<string | null>(null);
-  const handleSubmit = (e: React.FormEvent) => {
+  const [success, setSuccess] = useState<boolean>(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = form.name.trim();
     const email = form.email.trim();
@@ -32,8 +35,17 @@ function Contact() {
     if (!EMAIL_RE.test(email) || email.length > 255) return setError("Please enter a valid email.");
     if (!message || message.length > 1000) return setError("Message must be 1–1000 characters.");
     setError(null);
-    const msg = `Hi! I'm ${name} (${email}). ${message}`;
-    window.open(waLink(msg), "_blank", "noopener,noreferrer");
+
+    try {
+      // Save contact submission to local database in Laravel
+      await api.post("/contact", { name, email, message });
+      setSuccess(true);
+      
+      const msg = `Hi! I'm ${name} (${email}). ${message}`;
+      window.open(waLink(msg), "_blank", "noopener,noreferrer");
+    } catch (err: any) {
+      setError(err.message || "Failed to submit message to the server.");
+    }
   };
 
   return (
@@ -42,7 +54,7 @@ function Contact() {
       <div className="relative reveal">
         <span className="eyebrow-chip">Contact</span>
         <h1 className="mt-6 font-display text-5xl md:text-6xl leading-[1.05]">
-          Let's <span className="text-gold-gradient font-serif italic">talk.</span>
+          Let's <span className="text-gold-gradient">talk.</span>
         </h1>
         <p className="mt-6 text-muted-foreground text-lg leading-relaxed">
           Fastest reply on WhatsApp. Or send a brief and we'll get back within a few hours.
@@ -74,6 +86,7 @@ function Contact() {
             <textarea id="cf-message" name="message" required rows={5} maxLength={1000} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="input-luxury resize-none" placeholder="Tell us about your project, timeline, and budget." />
           </div>
           {error && <p role="alert" className="text-sm text-red-400">{error}</p>}
+          {success && <p role="status" className="text-sm text-emerald-400">Message saved to backend database! Opening WhatsApp...</p>}
           <button type="submit" className="btn-gold w-full">Send via WhatsApp →</button>
         </div>
       </form>
