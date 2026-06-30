@@ -16,7 +16,8 @@ export function ShaderBackground() {
     if (!gl) return;
 
     const syncSize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const isMobile = window.innerWidth < 768;
+      const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
       const w = Math.floor((canvas.clientWidth || window.innerWidth) * dpr);
       const h = Math.floor((canvas.clientHeight || window.innerHeight) * dpr);
       if (canvas.width !== w || canvas.height !== h) {
