@@ -106,7 +106,7 @@ function Home() {
               <Link to="/pricing" className="btn-outline-gold">View Pricing</Link>
             </div>
           </div>
-          <div className="relative h-[420px] md:h-[560px] lg:h-[640px] reveal stagger-2">
+          <div className="relative hidden md:block md:h-[560px] lg:h-[640px] reveal stagger-2">
             <GlobeHero />
           </div>
         </div>
