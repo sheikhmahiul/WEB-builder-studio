@@ -1,10 +1,18 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 export function GlobeHero() {
   const ref = useRef<HTMLDivElement>(null);
+  // Track mobile state in React state to avoid hydration mismatch if SSR was used,
+  // but since this is client side, we can just check on mount.
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsMobile(true);
+      return;
+    }
+
     const container = ref.current;
     if (!container) return;
 
